@@ -75,7 +75,7 @@ rs_upsert_table <- function(
         stageTable <- paste0(sample(letters, 32, replace = TRUE), collapse = "")
 
         if (is_schema(table_name)) {
-          table_name <- vec_to_dot(table_name)
+          table_name <- schema_to_character(table_name)
         }
 
         DBI::dbExecute(dbcon, sprintf("create temp table %s (like %s)", stageTable, table_name))

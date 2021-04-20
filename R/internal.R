@@ -308,22 +308,6 @@ make_dot <- function(table, schema = NULL) {
   paste0(schema, ".", table)
 }
 
-vec_to_dot <- function(x) {
-  if (length(x) == 1) {
-    has_period <- grepl(".", x, fixed = TRUE)
-    if (has_period) {
-      vec_to_dot(table_parts(x))
-    } else {
-      schema <- "public"
-      table <- x
-    }
-  } else {
-    assertthat::assert_that(length(x) == 2)
-    schema <- x[1]
-    table <- x[2]
-  }
-  make_dot(table, schema)
-}
 
 #' Make Credentials
 #'

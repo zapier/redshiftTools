@@ -169,6 +169,30 @@ decompose_in_schema <- function(table) {
   }
 }
 
+#' Convert dbplyr::in_schema() to an atomic character with dot seperating the schema and table name
+#'
+#' @param x dbplyr's in_schema() class
+#'
+#' @return character
+#' @export
+schema_to_character <- function(x) {
+  if (length(x) == 1) {
+    has_period <- grepl(".", x, fixed = TRUE)
+    if (has_period) {
+      schema_to_character(table_parts(x))
+    } else {
+      schema <- "public"
+      table <- x
+    }
+  } else {
+    assertthat::assert_that(length(x) == 2)
+    schema <- x[1]
+    table <- x[2]
+  }
+  make_dot(table, schema)
+}
+
+
 #' Make Column Names that Redshift Can Be Happy With
 #'
 #' @param .data data.frame or character vector
@@ -431,7 +455,7 @@ table_attributes <- function(diststyle = c("even", "all", "key"), distkey = NULL
 #' @export
 ctas_code <- function(query, table_name, temp = TRUE, view = FALSE,...) {
   if (is_schema(table_name)) {
-    table_name <- vec_to_dot(table_name)
+    table_name <- schema_to_character(table_name)
   }
   if (temp && view) {
     temp <- FALSE

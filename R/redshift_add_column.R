@@ -11,7 +11,7 @@
 #' @export
 rs_add_column <- function(dbcon, table_name, column_name, redshift_type) {
   if (is_schema(table_name)) {
-    table_name <- vec_to_dot(table_name)
+    table_name <- schema_to_character(table_name)
   }
   if (!column_name %in% DBI::dbListFields(dbcon, table_name)) {
     DBI::dbGetQuery(

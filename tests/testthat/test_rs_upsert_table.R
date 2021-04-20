@@ -4,7 +4,7 @@ zapieR::make_db_connections()
 
 test_that("We can insert a row into an existing table", {
   test_table <- dbplyr::in_schema("staging","redshiftToolsIris")
-  test_table_char <- redshiftTools:::vec_to_dot(test_table)
+  test_table_char <- schema_to_character(test_table)
   get_n <- function() {
     DBI::dbGetQuery(rs$con, glue::glue("select count(*) as n from {test_table_char}")) %>% dplyr::pull(n)
   }
