@@ -5,7 +5,7 @@ log_if_verbose <- function(...) {
 }
 
 stopifnoschema <- function(table_name) {
-  assertthat::assert_that(any(c("ident","dbplyr_schema") %in% class(table_name)), msg = "Table name must be result of dbplyr::in_schema()")
+  assertthat::assert_that(inherits(table_name, c("ident", "dbplyr_schema")), msg = "Table name must be result of dbplyr::in_schema()")
 }
 
 warnifnoschema <- function(table_name) {
