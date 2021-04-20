@@ -3,11 +3,13 @@ context("rs_upsert_table()")
 zapieR::make_db_connections()
 
 test_that("We can insert a row into an existing table", {
+  test_table <- dbplyr::in_schema("staging","redshiftToolsIris")
+  test_table_char <- redshiftTools:::vec_to_dot(test_table)
   get_n <- function() {
-    dbGetQuery(rs$con, "select count(*) as n from iris") %>% dplyr::pull(n)
+    DBI::dbGetQuery(rs$con, glue::glue("select count(*) as n from {test_table_char}")) %>% dplyr::pull(n)
   }
   original_n <- get_n()
-  rs_upsert_table(iris[1, ], dbcon = rs$con, tableName = "iris", bucket = "zapier-data-science-storage")
+  rs_upsert_table(iris[1, ], dbcon = rs$con, table_name = dbplyr::in_schema("staging","redshiftToolsIris"), bucket = "zapier-data-science-storage")
   expect_gte(get_n(), original_n + 1)
 })
 
@@ -18,7 +20,7 @@ rs_create_table(
   .data = mtcars_with_id,
   dbcon = rs$con, table_name = "mtcars_with_id"
 )
-#
+
 # test_that(
 # "When the table exists but is empty, rs_upsert_table works", {
 # uploaded_mtcars <- function() { DBI::dbGetQuery(rs$con, "select * from mtcars_with_id")}
@@ -34,7 +36,7 @@ rs_create_table(
 #     # duplicate rows.
 #     transaction(.data = mtcars_with_id,
 #     .dbcon = rs$con,
-#     .function_sequence = list(function(...) { rs_upsert_table(tableName = "mtcars_with_id", keys = "id" , bucket = "zapier-data-science-storage", ...)})
+#     .function_sequence = list(function(...) { rs_upsert_table(table_name = "mtcars_with_id", keys = "id" , bucket = "zapier-data-science-storage", ...)})
 #     )
 # })
 # expect_equal(dim(uploaded_mtcars()), dim(mtcars_with_id))

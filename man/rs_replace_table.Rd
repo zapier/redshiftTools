@@ -4,18 +4,26 @@
 \alias{rs_replace_table}
 \title{Replace or upsert redshift table}
 \usage{
-rs_replace_table(data, dbcon, tableName, split_files,
+rs_replace_table(
+  data,
+  dbcon,
+  table_name,
+  split_files,
   bucket = Sys.getenv("AWS_BUCKET_NAME"),
-  region = Sys.getenv("AWS_DEFAULT_REGION"), access_key = NULL,
-  secret_key = NULL, remove_quotes = TRUE, strict = TRUE,
-  use_transaction = TRUE)
+  region = Sys.getenv("AWS_DEFAULT_REGION"),
+  access_key = NULL,
+  secret_key = NULL,
+  remove_quotes = TRUE,
+  strict = TRUE,
+  use_transaction = TRUE
+)
 }
 \arguments{
 \item{data}{a data frame}
 
 \item{dbcon}{an RPostgres connection to the redshift server}
 
-\item{tableName}{the name of the table to replace}
+\item{table_name}{the name of the table to replace}
 
 \item{split_files}{optional parameter to specify amount of files to split into. If not specified will look at amount of slices in Redshift to determine an optimal amount.}
 
@@ -41,7 +49,7 @@ con <- dbConnect(RPostgres::Postgres(), dbname="dbname",
 host='my-redshift-url.amazon.com', port='5439',
 user='myuser', password='mypassword',sslmode='require')
 
-rs_replace_table(data=a, dbcon=con, tableName='testTable',
+rs_replace_table(data=a, dbcon=con, table_name='testTable',
 bucket="my-bucket", split_files=4)
 
 }

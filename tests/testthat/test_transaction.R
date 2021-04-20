@@ -13,8 +13,8 @@
 #       .dbcon = rs$con,
 #       .function_sequence = list(
 #         function(...) { rs_create_table(table_name = "mtcars", ...) },
-#         function(...) { rs_upsert_table(tableName = "mtcars", ...) },
-#         function(...) { rs_replace_table(tableName = "mtcars", ...) }
+#         function(...) { rs_upsert_table(table_name = "mtcars", ...) },
+#         function(...) { rs_replace_table(table_name = "mtcars", ...) }
 #       )
 #     )
 #   })

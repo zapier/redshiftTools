@@ -4,17 +4,26 @@
 \alias{rs_upsert_table}
 \title{Upsert redshift table}
 \usage{
-rs_upsert_table(data, dbcon, tableName, keys = NULL, split_files,
+rs_upsert_table(
+  data,
+  dbcon,
+  table_name,
+  keys = NULL,
+  split_files,
   bucket = Sys.getenv("AWS_BUCKET_NAME"),
-  region = Sys.getenv("AWS_DEFAULT_REGION"), access_key = NULL,
-  secret_key = NULL, strict = FALSE, use_transaction = TRUE)
+  region = Sys.getenv("AWS_DEFAULT_REGION", unset = "us-east-1"),
+  access_key = NULL,
+  secret_key = NULL,
+  strict = FALSE,
+  use_transaction = TRUE
+)
 }
 \arguments{
 \item{data}{a data frame}
 
 \item{dbcon}{an RPostgres connection to the redshift server}
 
-\item{tableName}{the name of the table to replace}
+\item{table_name}{the name of the table to replace}
 
 \item{keys}{athis optional vector contains the variables by which to upsert. If not defined, the upsert becomes an append.}
 
@@ -46,7 +55,7 @@ con <- dbConnect(RPostgres::Postgres(), dbname="dbname",
 host='my-redshift-url.amazon.com', port='5439',
 user='myuser', password='mypassword',sslmode='require')
 
-rs_upsert_table(data=nx, dbcon=con, tableName='testTable',
+rs_upsert_table(data=nx, dbcon=con, table_name='testTable',
 bucket="my-bucket", split_files=4, keys=c('a'))
 
 }

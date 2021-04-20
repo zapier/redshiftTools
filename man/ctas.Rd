@@ -15,6 +15,9 @@ ctas(query, table_name, ..., temp = TRUE, view = FALSE)
 
 \item{temp}{boolean.  By default ctas creates temp tables, if you want to override this behavior it takes an explicit named operator.}
 }
+\value{
+
+}
 \description{
 Create Table as Select
 }

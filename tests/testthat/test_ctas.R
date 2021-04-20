@@ -33,3 +33,12 @@ test_that(
     DBI::dbExecute(zapieR::rs_db()$con, glue::glue("drop table {ttn} CASCADE"))
     DBI::dbExecute(zapieR::rs_db()$con, glue::glue("drop view if exists {ttvn}"))
   })
+
+test_that(
+  "ctas works for in_schema", {
+    zapieR::rs_db("select * from iris") %>%
+      ctas(dbplyr::in_schema("staging","redshiftToolsIris"), temp = FALSE)
+    expect_gte(zapieR::rs_db("Select count(*) as n from staging.redshiftToolsIris") %>% pull(n),1)
+  })
+
+

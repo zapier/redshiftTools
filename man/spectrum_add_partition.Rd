@@ -4,8 +4,14 @@
 \alias{spectrum_add_partition}
 \title{Add a partition to Redshift Spectrum}
 \usage{
-spectrum_add_partition(dbcon, table_name, part_name, part_value, base_location,
-  quote_partition_value = TRUE)
+spectrum_add_partition(
+  dbcon,
+  table_name,
+  part_name,
+  part_value,
+  base_location,
+  quote_partition_value = TRUE
+)
 }
 \arguments{
 \item{dbcon}{The database connection to Redshift}

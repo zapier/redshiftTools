@@ -52,3 +52,12 @@ For example, suppose we have a table to load with 2 integer columns, we could us
     c=rs_upsert_table(nx, dbcon=con, tableName = 'mytable', split_files=4, bucket="mybucket", keys=c('a'))
 
 ```
+
+## Changelog
+
+### 0.2.2
+
+* Updated code to meet {dbplyr}'s change in class from `dbplyr::in_schema()`
+* BREAKING CHANGE: standardized function call args from `tableName` to `table_name`
+* Updated code wrapped in transaction() so that errors bubble up
+* {redshiftTools} tests had been broken for a while, did some bug fixes o that they pass

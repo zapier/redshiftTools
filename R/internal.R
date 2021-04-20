@@ -1,15 +1,23 @@
+table_parts <- function(x) {
+  unlist(strsplit(as.character(x), split = ".", fixed = TRUE))
+}
+
 log_if_verbose <- function(...) {
   if (isTRUE(getOption("redshiftTools.verbose"))) {
     message("redshiftTools: ", ...)
   }
 }
 
+is_schema <- function(table_name) {
+  return(any(c("ident","dbplyr_schema") %in% class(table_name)))
+}
+
 stopifnoschema <- function(table_name) {
-  assertthat::assert_that(any(c("ident","dbplyr_schema") %in% class(table_name)), msg = "Table name must be result of dbplyr::in_schema()")
+  assertthat::assert_that(is_schema(table_name), msg = "Table name must be result of dbplyr::in_schema()")
 }
 
 warnifnoschema <- function(table_name) {
-  if (!"ident" %in% class(table_name)) {
+  if (!is_schema(table_name)) {
     warning(glue("No schema specified for {table_name}, will default to using public"))
     return(FALSE)
   } else {
@@ -17,13 +25,13 @@ warnifnoschema <- function(table_name) {
   }
 }
 
-#' Simple coalece
+#' Simple coalesce
 #'
-#' A simple non-type aware coalece
+#' A simple non-type aware coalesce
 #'
 #' @aliases coalesceifnull %||%
-#' @params x left position
-#' @params y right position
+#' @param x left position
+#' @param y right position
 coalesceifnull <- function(x, y) {
   return(x %||% y)
 }
@@ -168,20 +176,37 @@ queryDo <- function(dbcon, query) {
 #' @importFrom assertthat assert_that
 #' @importFrom DBI dbGetQuery
 #' @importFrom whisker whisker.render
+#' @importFrom dplyr rename
 get_table_schema <- function(dbcon, table) {
   assertthat::assert_that(length(table) <= 2)
-  assertthat::assert_that("character" %in% class(table))
   if (is.atomic(table)) {
     schema <- "public"
     target_table <- table
   } else {
-    schema <- table[1]
-    target_table <- table[2]
+    schema <- tolower(as.character(table[1]))
+    target_table <- tolower(as.character(table[2]))
   }
-  dbGetQuery(dbcon, whisker.render("SELECT *
-  FROM pg_table_def
-  WHERE tablename = '{{table_name}}'
-  AND schemaname = '{{schema}}'", list(table_name = target_table, schema = schema)))
+
+  ## pg_table_def only contains items that are in the search path
+
+  #original_search_path <- DBI::dbGetQuery(dbcon, "show search_path;")$search_path
+  ##dbGetQuery loses the single quotes around user
+  #original_search_path <- gsub("$user", "'$user'", original_search_path, fixed = TRUE)
+  #DBI::dbExecute(dbcon, whisker.render("set search_path to {{schema}}, '$user', public", list (schema = schema)))
+  ## really should be in a try block, otherwise we risk messing up the search path
+  #res <- dbGetQuery(dbcon, whisker.render("SELECT *
+  #FROM pg_table_def
+  #WHERE tablename = '{{table_name}}'
+  #AND schemaname = '{{schema}}'", list(table_name = target_table, schema = schema)))
+  #DBI::dbExecute(dbcon, whisker.render("set search_path to {{original}}", list (original = original_search_path)))
+  res <- dbGetQuery(dbcon,
+    glue::glue_sql(
+      .con = dbcon,
+      "select * from information_schema.columns where table_schema = {schema} and table_name = {target_table}"
+    )) %>%
+    rename(schemaname = table_schema, tablename = table_name, column = column_name, type = data_type) %>%
+    arrange(ordinal_position)
+  return(res)
 }
 
 #' Fix the order of columns in d to match the underlying Redshift table
@@ -238,7 +263,7 @@ fix_column_order <- function(d, dbcon, table_name, strict = TRUE) {
 #' and the result can't change quickly because Redshift resizes take quite some time.
 #'
 #' @importFrom memoise memoise timeout
-#' @params dbcon A database connection object
+#' @param dbcon A database connection object
 number_of_slices <- memoise::memoise(function(dbcon) {
   message("Getting number of slices from Redshift")
   slices <- queryDo(dbcon, "select count(1) from stv_slices")
@@ -285,8 +310,13 @@ make_dot <- function(table, schema = NULL) {
 
 vec_to_dot <- function(x) {
   if (length(x) == 1) {
-    schema <- "public"
-    table <- x
+    has_period <- grepl(".", x, fixed = TRUE)
+    if (has_period) {
+      vec_to_dot(table_parts(x))
+    } else {
+      schema <- "public"
+      table <- x
+    }
   } else {
     assertthat::assert_that(length(x) == 2)
     schema <- x[1]
@@ -294,11 +324,6 @@ vec_to_dot <- function(x) {
   }
   make_dot(table, schema)
 }
-
-dot_to_vec <- function(x) {
-  strsplit(x, split = ".", fixed = TRUE)[[1]]
-}
-
 
 #' Make Credentials
 #'

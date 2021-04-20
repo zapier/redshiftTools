@@ -4,8 +4,12 @@
 \alias{table_attributes}
 \title{Get Table Attributes String}
 \usage{
-table_attributes(diststyle = c("even", "all", "key"), distkey = NULL,
-  compound_sort = NULL, interleaved_sort = NULL)
+table_attributes(
+  diststyle = c("even", "all", "key"),
+  distkey = NULL,
+  compound_sort = NULL,
+  interleaved_sort = NULL
+)
 }
 \arguments{
 \item{diststyle}{Distribution style defaults to "even"}

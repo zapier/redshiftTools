@@ -430,6 +430,9 @@ table_attributes <- function(diststyle = c("even", "all", "key"), distkey = NULL
 #' @return character. SQL commands to execute the specified create table as select statement
 #' @export
 ctas_code <- function(query, table_name, temp = TRUE, view = FALSE,...) {
+  if (is_schema(table_name)) {
+    table_name <- vec_to_dot(table_name)
+  }
   if (temp && view) {
     temp <- FALSE
   }
@@ -465,7 +468,6 @@ ctas_code <- function(query, table_name, temp = TRUE, view = FALSE,...) {
 #' @return
 #' @export
 #'
-#' @examples
 #' @importFrom dbplyr db_sql_render
 #' @importFrom DBI dbExecute
 #' @importFrom glue glue
@@ -491,8 +493,6 @@ ctas <- function(query, table_name, ..., temp = TRUE, view = FALSE) {
 #' @export
 #' @importFrom dplyr tbl
 #' @importFrom glue glue
-#'
-#' @examples
 query_details <- function(con, query_id = NULL) {
   specific_query <- ifelse(is.null(query_id), "", glue("where query = {query_id}"))
 con %>%
@@ -553,8 +553,7 @@ is_temp_table <- function(con, table_name) {
 #'
 #' @return
 #' @export
-#'
-#' @examples
+
 #' @importFrom uuid UUIDgenerate
 temp_table_name <- function(n = 1, prefix = "tt_") {
   paste(prefix, gsub("-", "", replicate(n,uuid::UUIDgenerate())),sep = "")
@@ -571,7 +570,7 @@ temp_table_name <- function(n = 1, prefix = "tt_") {
 #' @export
 get_column_names <- function(con, table) {
   # This function gets column names from Redshift even if the table has no rows or is a temp table
-  if ("ident_q" %in% class(table)) {
+  if (is_schema(table)) {
     table <- decompose_in_schema(table)
     query <- glue('select * from "{attr(table, "schema_name")}"."{attr(table, "table_name")}" limit 1')
   } else {

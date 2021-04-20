@@ -6,6 +6,9 @@
 \usage{
 number_of_slices(dbcon)
 }
+\arguments{
+\item{dbcon}{A database connection object}
+}
 \description{
 We use this as a hint for how many pieces we should slice our data into.
 We memoise this query for 1 hour because we may end up doing it several times,

@@ -3,10 +3,15 @@
 \name{coalesceifnull}
 \alias{coalesceifnull}
 \alias{\%||\%}
-\title{Simple coalece}
+\title{Simple coalesce}
 \usage{
 coalesceifnull(x, y)
 }
+\arguments{
+\item{x}{left position}
+
+\item{y}{right position}
+}
 \description{
-A simple non-type aware coalece
+A simple non-type aware coalesce
 }
