@@ -61,4 +61,4 @@ For example, suppose we have a table to load with 2 integer columns, we could us
 * BREAKING CHANGE: standardized function call args from `tableName` to `table_name`
 * Updated code wrapped in transaction() so that errors bubble up
 * {redshiftTools} tests had been broken for a while, did some bug fixes o that they pass
-* Because we now make good use of schema other than 'public' earlier introspection code using `pg_table_def` stopped working unless we were to update the user's search path. In order to avoid that, we now use `information_schema.columns` for that.  :ht: @ Jessica Holliday.
+* Because we now make good use of schema other than 'public' earlier introspection code using `pg_table_def` stopped working unless we were to update the user's search path. In order to avoid that, we now use `information_schema.columns`.  :ht: @ Jessica Holliday.
