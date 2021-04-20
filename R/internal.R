@@ -9,7 +9,7 @@ log_if_verbose <- function(...) {
 }
 
 is_schema <- function(table_name) {
-  return(any(c("ident","dbplyr_schema") %in% class(table_name)))
+  return(inherits(table_name, c("ident", "dbplyr_schema")))
 }
 
 stopifnoschema <- function(table_name) {
