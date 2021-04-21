@@ -40,13 +40,11 @@ transaction <- function(.data, .dbcon, .function_sequence) {
       TRUE
     },
     error = function(e) {
+      # send message now in case we hit another error during ROLLBACK - possible if we lost db connection
       message(e$message)
       DBI::dbExecute(.dbcon, "ROLLBACK;")
       message("Rollback complete")
-      result <- FALSE
-      attr(result, "error") <- e
       stop(glue("A redshift error occured: {e$message}"))
-      return(result)
     }
   )
   if (is.null(result)) {
