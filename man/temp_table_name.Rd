@@ -11,6 +11,9 @@ temp_table_name(n = 1, prefix = "tt_")
 
 \item{prefix}{character. The prefix to use for the table name, defaults to tt_}
 }
+\value{
+
+}
 \description{
 Generates uuids (without dashes) to use as names for temp tables and adds a prefix.
 }

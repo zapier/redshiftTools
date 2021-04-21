@@ -14,7 +14,7 @@
 #       transaction(.data = mtcars,
 #                   .dbcon = rs$con,
 #                   .function_sequence = list(
-#                     function(...) { rs_replace_table(tableName = "mtcars", bucket = "zapier-data-science-storage", ...) }
+#                     function(...) { rs_replace_table(table_name = "mtcars", bucket = "zapier-data-science-storage", ...) }
 #                   )
 #       )
 #     }))

@@ -1,8 +1,5 @@
-table_parts <- function(table_name) {
-  return(strsplit(table_name, ".", fixed = TRUE)[[1]])
-}
-
 globalVariables(c("V1", "values")) # suppresses check note due to NSE
+
 #' List Spectrum partitions
 #'
 #' Provides character vector of partition names for a given table
@@ -75,7 +72,7 @@ spectrum_drop_partition <- function(dbcon, table_name, part_name, part_value) {
 #' @importFrom glue glue
 #' @importFrom DBI dbExecute
 spectrum_add_partition <- function(dbcon, table_name, part_name, part_value, base_location, quote_partition_value = TRUE) {
-  stopifnot("ident" %in% class(table_name))
+  stopifnoschema(table_name)
   if (quote_partition_value) {
     q <- "'"
   } else {

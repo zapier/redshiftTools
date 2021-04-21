@@ -5,7 +5,7 @@
 #'
 #' @param data a data frame
 #' @param dbcon an RPostgres connection to the redshift server
-#' @param tableName the name of the table to replace
+#' @param table_name the name of the table to replace
 #' @param split_files optional parameter to specify amount of files to split into. If not specified will look at amount of slices in Redshift to determine an optimal amount.
 #' @param bucket the name of the temporary bucket to load the data. Will look for AWS_BUCKET_NAME on environment if not specified.
 #' @param region the region of the bucket. Will look for AWS_DEFAULT_REGION on environment if not specified.
@@ -21,7 +21,7 @@
 #' host='my-redshift-url.amazon.com', port='5439',
 #' user='myuser', password='mypassword',sslmode='require')
 #'
-#' rs_replace_table(data=a, dbcon=con, tableName='testTable',
+#' rs_replace_table(data=a, dbcon=con, table_name='testTable',
 #' bucket="my-bucket", split_files=4)
 #'
 #' }
@@ -29,7 +29,7 @@
 #' @importFrom DBI dbExecute
 rs_replace_table <- function(data,
                              dbcon,
-                             tableName,
+                             table_name,
                              split_files,
                              bucket = Sys.getenv("AWS_BUCKET_NAME"),
                              region = Sys.getenv("AWS_DEFAULT_REGION"),
@@ -49,7 +49,7 @@ rs_replace_table <- function(data,
   # all the work. it's not a pure function!
   replace <- function(data, dbcon) {
     split_files <- min(split_files, nrow(data))
-    data <- fix_column_order(data, dbcon, table_name = tableName, strict = strict)
+    data <- fix_column_order(data, dbcon, table_name = table_name, strict = strict)
     prefix <- uploadToS3(data, bucket, split_files)
     raw_bucket <- paste0(bucket, if (Sys.getenv("ENVIRONMENT") == "production") "" else "-test")
     on.exit({
@@ -57,7 +57,7 @@ rs_replace_table <- function(data,
       deletePrefix(prefix, raw_bucket, split_files)
     })
     message("Truncating target table")
-    queryDo(dbcon, sprintf("truncate table %s", tableName))
+    queryDo(dbcon, sprintf("truncate table %s", table_name))
     if (remove_quotes) {
       query_string <- "copy %s from 's3://%s/%s.' region '%s' truncatecolumns acceptinvchars as '^' escape delimiter '|' removequotes gzip ignoreheader 1 emptyasnull STATUPDATE ON COMPUPDATE ON %s;"
     } else {
@@ -65,7 +65,7 @@ rs_replace_table <- function(data,
     }
     DBI::dbExecute(dbcon, sprintf(
       query_string,
-      tableName,
+      table_name,
       raw_bucket,
       prefix,
       region,

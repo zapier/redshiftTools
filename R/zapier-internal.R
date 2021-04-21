@@ -8,6 +8,7 @@
 #' @param additional_processing Defined as functional chain, e.g. . %>% identity
 #'
 #' @return Unevaluated dbplyr of materialized temp table
+#' @importFrom dplyr rename
 #' @export
 mini_cube <- function(db_fun, name, start, end, resulting_table_name, ..., additional_processing = . %>% {.}) {
   mini_cube_event <- paste0("tt_", gsub("-", "", generate_uuids(1)))

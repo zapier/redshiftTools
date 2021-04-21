@@ -14,8 +14,8 @@
 #' .dbcon = rs$con,
 #' .function_sequence = list(
 #'  function(...) { rs_create_table(table_name = "mtcars", ...) },
-#'  function(...) { rs_upsert_table(tableName = "mtcars", ...) },
-#'  function(...) { rs_replace_table(tableName = "mtcars", ...) }
+#'  function(...) { rs_upsert_table(table_name = "mtcars", ...) },
+#'  function(...) { rs_replace_table(table_name = "mtcars", ...) }
 #'  )
 #' )
 #' }
@@ -40,14 +40,18 @@ transaction <- function(.data, .dbcon, .function_sequence) {
       TRUE
     },
     error = function(e) {
+      # send message now in case we hit another error during ROLLBACK - possible if we lost db connection
       message(e$message)
       DBI::dbExecute(.dbcon, "ROLLBACK;")
       message("Rollback complete")
-      FALSE
+      stop(glue("A redshift error occured: {e$message}"))
     }
   )
-  if (is.null(result) || !isTRUE(result)) {
-    stop("A redshift error occured")
+  if (is.null(result)) {
+    stop("A redshift error occured, the result of the transaction was NULL - which is unexpected")
+  }
+  if (!isTRUE(result)) {
+    stop("A redshift error occured, the result of the transaction was FALSE - which is unexpected")
   }
   return(result)
 }

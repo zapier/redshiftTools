@@ -4,8 +4,7 @@
 \alias{create_external_table}
 \title{Execute the DDL for an External Table}
 \usage{
-create_external_table(dbcon, d, table_name, location, partitioned_by = "",
-  ...)
+create_external_table(dbcon, d, table_name, location, partitioned_by = "", ...)
 }
 \arguments{
 \item{dbcon}{a database connection}

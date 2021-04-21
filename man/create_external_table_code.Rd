@@ -4,8 +4,14 @@
 \alias{create_external_table_code}
 \title{Define the DDL for an External Table}
 \usage{
-create_external_table_code(dbcon, d, table_name, location,
-  partitioned_by = "", ...)
+create_external_table_code(
+  dbcon,
+  d,
+  table_name,
+  location,
+  partitioned_by = "",
+  ...
+)
 }
 \arguments{
 \item{dbcon}{a database connection}

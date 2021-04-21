@@ -6,7 +6,7 @@
 #'
 #' @param data a data frame
 #' @param dbcon an RPostgres connection to the redshift server
-#' @param tableName the name of the table to replace
+#' @param table_name the name of the table to replace
 #' @param split_files optional parameter to specify amount of files to split into. If not specified will look at amount of slices in Redshift to determine an optimal amount.
 #' @param keys athis optional vector contains the variables by which to upsert. If not defined, the upsert becomes an append.
 #' @param bucket the name of the temporary bucket to load the data. Will look for AWS_BUCKET_NAME on environment if not specified.
@@ -30,7 +30,7 @@
 #' host='my-redshift-url.amazon.com', port='5439',
 #' user='myuser', password='mypassword',sslmode='require')
 #'
-#' rs_upsert_table(data=nx, dbcon=con, tableName='testTable',
+#' rs_upsert_table(data=nx, dbcon=con, table_name='testTable',
 #' bucket="my-bucket", split_files=4, keys=c('a'))
 #'
 #' }
@@ -38,11 +38,11 @@
 rs_upsert_table <- function(
                             data,
                             dbcon,
-                            tableName,
+                            table_name,
                             keys = NULL,
                             split_files,
                             bucket=Sys.getenv("AWS_BUCKET_NAME"),
-                            region=Sys.getenv("AWS_DEFAULT_REGION"),
+                            region=Sys.getenv("AWS_DEFAULT_REGION", unset = "us-east-1"),
                             access_key=NULL,
                             secret_key=NULL,
                             strict = FALSE,
@@ -66,7 +66,7 @@ rs_upsert_table <- function(
         raw_bucket <- paste0(bucket, if (Sys.getenv("ENVIRONMENT") == "production") "" else "-test")
         split_files <- min(split_files, nrow(data))
 
-        data <- fix_column_order(data, dbcon, table_name = tableName, strict = strict)
+        data <- fix_column_order(data, dbcon, table_name = table_name, strict = strict)
         prefix <- uploadToS3(data, bucket, split_files)
         on.exit({
           message("Deleting temporary files from S3 bucket")
@@ -74,7 +74,11 @@ rs_upsert_table <- function(
         })
         stageTable <- paste0(sample(letters, 32, replace = TRUE), collapse = "")
 
-        DBI::dbExecute(dbcon, sprintf("create temp table %s (like %s)", stageTable, tableName))
+        if (is_schema(table_name)) {
+          table_name <- schema_to_character(table_name)
+        }
+
+        DBI::dbExecute(dbcon, sprintf("create temp table %s (like %s)", stageTable, table_name))
 
         message("Copying data from S3 into Redshift")
         DBI::dbExecute(dbcon, sprintf(
@@ -88,18 +92,18 @@ rs_upsert_table <- function(
 
         if (!is.null(keys)) {
           message("Deleting rows with same keys")
-          keysCond <- paste(stageTable, ".", keys, "=", tableName, ".", keys, sep = "")
+          keysCond <- paste(stageTable, ".", keys, "=", table_name, ".", keys, sep = "")
           keysWhere <- sub(" and $", "", paste0(keysCond, collapse = "", sep = " and "))
           DBI::dbExecute(dbcon, sprintf(
             "delete from %s using %s where %s;",
-            tableName,
+            table_name,
             stageTable,
             keysWhere
           ))
         }
 
         message("Insert new rows")
-        DBI::dbExecute(dbcon, sprintf("insert into %s (select * from %s);", tableName, stageTable))
+        DBI::dbExecute(dbcon, sprintf("insert into %s (select * from %s);", table_name, stageTable))
         DBI::dbExecute(dbcon, sprintf("drop table %s;", stageTable))
       },
       error = function(e) {
