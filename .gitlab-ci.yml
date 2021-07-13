@@ -1,0 +1,20 @@
+image:
+  name: 996097627176.dkr.ecr.us-east-1.amazonaws.com/rstudio-worker
+  entrypoint: [""]
+
+stages:
+  - test
+  - deploy
+
+test:
+  stage: test
+  script:
+    - Rscript -e 'install.packages("rzapierci"); rzapierci::check_package()'
+
+deploy:
+  stage: deploy
+  only:
+    - main
+    - master
+  script:
+    - Rscript -e 'install.packages("rzapierci"); rzapierci::deploy_package()'

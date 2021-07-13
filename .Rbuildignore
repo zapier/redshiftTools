@@ -6,3 +6,4 @@ ci-rs.R
 ci.sh
 bootstrap.R
 tests.dockerfile
+^\.gitlab-ci\.yml$
